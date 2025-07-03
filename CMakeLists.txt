@@ -5,4 +5,5 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(raytracing main.cpp
         objects/vec3.h
-        utilities/color.h)
+        utilities/color.h
+        objects/ray.h)

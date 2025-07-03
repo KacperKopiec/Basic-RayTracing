@@ -33,4 +33,16 @@ public:
 
         out << r << ' ' << g << ' ' << b << '\n';
     }
+
+    friend constexpr color operator+(const color& u, const color& v) noexcept {
+        return {u.r + v.r, u.g + v.g, u.b + v.b};
+    }
+
+    friend constexpr color operator*(const color& u, const double t) noexcept {
+        return color{u.r * t, u.g * t, u.b * t};
+    }
+
+    friend constexpr color operator*(const double t, const color& u) noexcept {
+        return color{u.r * t, u.g * t, u.b * t};
+    }
 };
