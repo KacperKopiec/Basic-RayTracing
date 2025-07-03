@@ -5,7 +5,7 @@
 class color {
 private:
     constexpr static bool is_valid(const double value) noexcept {
-        return 0 <= value && value <= 1;
+        return 0.0 <= value && value <= 1.0;
     }
 
 public:
@@ -16,7 +16,7 @@ public:
         set(red, green, blue);
     }
 
-    void set(const double red, const double green, const double blue) {
+    constexpr void set(const double red, const double green, const double blue) {
         if (!is_valid(red) || !is_valid(green) || !is_valid(blue)) {
             throw std::out_of_range("Color values must be in the range [0, 1]");
         }
