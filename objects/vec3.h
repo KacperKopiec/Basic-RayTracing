@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cmath>
-#include <iostream>
 #include <stdexcept>
 
 class vec3 {
