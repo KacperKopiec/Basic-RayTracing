@@ -12,4 +12,5 @@ add_executable(raytracing main.cpp
         objects/sphere.h
         objects/hittable_list.h
         utilities/base.h
-        utilities/interval.h)
+        utilities/interval.h
+        render/camera.h)
