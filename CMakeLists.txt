@@ -13,4 +13,7 @@ add_executable(raytracing main.cpp
         objects/hittable_list.h
         utilities/base.h
         utilities/interval.h
-        render/camera.h)
+        render/camera.h
+        objects/materials/material.h
+        objects/materials/lambertian.h
+        objects/materials/metal.h)

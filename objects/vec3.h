@@ -48,6 +48,15 @@ public:
         return std::sqrt(squared_length());
     }
 
+    [[nodiscard]] bool near_zero() const noexcept {
+        constexpr double eps = 1e-8;
+        return std::fabs(x) < eps && std::fabs(y) < eps && std::fabs(z) < eps;
+    }
+
+    static vec3 reflect(const vec3& v, const vec3& n) {
+        return v - 2 * dot(v, n) * n;
+    }
+
     static vec3 random() {
         return vec3{random_double(), random_double(), random_double()};
     }
