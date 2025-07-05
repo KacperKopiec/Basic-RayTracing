@@ -48,6 +48,28 @@ public:
         return std::sqrt(squared_length());
     }
 
+    static vec3 random() {
+        return vec3{random_double(), random_double(), random_double()};
+    }
+
+    static vec3 random(const double min, const double max) {
+        return vec3{random_double(min, max), random_double(min, max), random_double(min, max)};
+    }
+
+    static vec3 random_unit_vector() {
+        const double z = random_double(-1.0, 1.0);
+        const double phi = random_double(0.0, 2 * pi);
+        const double r = std::sqrt(1 - z * z);
+        return vec3{r * std::cos(phi), r * std::sin(phi), z};
+    }
+
+    static vec3 random_on_hemisphere(const vec3& normal) {
+        if (const vec3 in_unit_sphere = random_unit_vector(); dot(in_unit_sphere, normal) > 0.0)
+            return in_unit_sphere;
+        else
+            return -in_unit_sphere;
+    }
+
     friend constexpr vec3 operator+(const vec3& u, const vec3& v) noexcept {
         return {u.x + v.x, u.y + v.y, u.z + v.z};
     }

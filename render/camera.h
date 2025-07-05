@@ -10,6 +10,7 @@ private:
     int image_width{100};
     int image_height{100};
     int samples_per_pixel{100};
+    int max_depth{10};
     point3 center;
     point3 pixel00_loc;
     vec3 pixel_delta_u;
@@ -37,9 +38,12 @@ private:
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
-    [[nodiscard]] color ray_color(const ray& r, const hittable& world) const {
-        if (hit_record rec; world.hit(r, interval(0.0, infinity), rec)) {
-            return 0.5 * (rec.normal + color(1, 1, 1));
+    [[nodiscard]] color ray_color(const ray& r, const int depth, const hittable& world) const {
+        if (depth <= 0) return color{0, 0, 0};
+
+        if (hit_record rec; world.hit(r, interval(0.001, infinity), rec)) {
+            const vec3 direction = rec.normal + vec3::random_unit_vector();
+            return 0.5 * ray_color(ray{rec.p, direction}, depth - 1, world);
         }
 
         const vec3 unit_direction = unit_vector(r.get_direction());
@@ -72,7 +76,7 @@ public:
                 color pixel_color(0, 0, 0);
                 for (int sample = 0; sample < samples_per_pixel; sample++) {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, max_depth, world);
                 }
                 write_color(std::cout, pixel_color * pixel_samples_scale);
             }
@@ -94,5 +98,10 @@ public:
     void set_samples_per_pixel(const int samples_per_pixel) {
         if (samples_per_pixel <= 0.0) throw std::invalid_argument("Samples per pixel must be positive");
         this->samples_per_pixel = samples_per_pixel;
+    }
+
+    void set_max_depth(const int max_depth) {
+        if (max_depth <= 0.0) throw std::invalid_argument("Max depth must be positive");
+        this->max_depth = max_depth;
     }
 };
