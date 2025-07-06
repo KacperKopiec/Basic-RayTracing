@@ -1,4 +1,6 @@
 #pragma once
+#include <thread>
+
 #include "../objects/vec3.h"
 #include "../objects/hittable.h"
 #include "../objects/materials/material.h"
@@ -15,6 +17,7 @@ private:
     int image_height{100};
     int samples_per_pixel{100};
     int max_depth{10};
+    int number_of_threads{1};
     point3 center;
     point3 pixel00_loc;
     point3 look_from = point3{0,0,0};
@@ -57,6 +60,18 @@ private:
         defocus_disk_v = defocus_radius * v;
     }
 
+    static void process_scanlines(const camera& cam, const hittable& world, std::vector<std::vector<color>>& image, const int start, const int end) {
+        for (int pixel = start; pixel < end; pixel++) {
+            for (int sample = 0; sample < cam.samples_per_pixel; sample++) {
+                const auto j = pixel / cam.image_width;
+                const auto i = pixel % cam.image_width;
+                const auto r = cam.get_ray(i, j);
+                const auto pixel_color = cam.ray_color(r, cam.max_depth, world);
+                image[j][i] += pixel_color;
+            }
+        }
+    }
+
     [[nodiscard]] color ray_color(const ray& r, const int depth, const hittable& world) const {
         if (depth <= 0) return color{0, 0, 0};
 
@@ -96,19 +111,24 @@ public:
 
         std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
-        for (int j = 0; j < image_height; j++) {
-            std::clog << "\rScanlines remaining: " << image_height - j << " " << std::flush;
-            for (int i = 0; i < image_width; i++) {
-                color pixel_color(0, 0, 0);
-                for (int sample = 0; sample < samples_per_pixel; sample++) {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
-                }
-                write_color(std::cout, pixel_color * pixel_samples_scale);
-            }
+        std::vector image(image_height, std::vector<color>(image_width));
+        std::vector<std::thread> threads;
+
+        for (int thread = 0; thread < number_of_threads; thread++) {
+            const int start = static_cast<int>(static_cast<double>(thread) / number_of_threads * (image_height * image_width));
+            const int end = static_cast<int>(static_cast<double>(thread + 1) / number_of_threads * (image_height * image_width));
+            threads.emplace_back(process_scanlines, std::ref(*this), std::ref(world), std::ref(image), start, end);
         }
 
-        std::clog << "\rDone.                  \n";
+        for (auto &thread : threads) {
+            thread.join();
+        }
+
+        for (int j = 0; j < image_height; j++) {
+            for (int i = 0; i < image_width; i++) {
+                write_color(std::cout, image[j][i] * pixel_samples_scale);
+            }
+        }
     }
 
     void set_aspect_ratio(const double aspect_ratio) {
@@ -156,5 +176,10 @@ public:
     void set_defocus_angle(const double defocus_angle) {
         if (defocus_angle < 0.0) throw std::invalid_argument("Defocus angle must be non-negative");
         this->defocus_angle = defocus_angle;
+    }
+
+    void set_number_of_threads(const int number_of_threads) {
+        if (number_of_threads <= 0) throw std::invalid_argument("Number of threads must be positive");
+        this->number_of_threads = number_of_threads;
     }
 };
