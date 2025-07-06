@@ -79,6 +79,12 @@ public:
         return vec3{r * std::cos(phi), r * std::sin(phi), z};
     }
 
+    static vec3 random_in_unit_disk() {
+        const double r = random_double();
+        const double phi = random_double(0.0, 2 * pi);
+        return vec3{r * std::cos(phi), r * std::sin(phi), 0.0};
+    }
+
     static vec3 random_on_hemisphere(const vec3& normal) {
         if (const vec3 in_unit_sphere = random_unit_vector(); dot(in_unit_sphere, normal) > 0.0)
             return in_unit_sphere;
