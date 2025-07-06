@@ -7,6 +7,13 @@ class dielectric final : public material {
 private:
     double refraction_index{};
 
+    [[nodiscard]] double reflectance(const double cosine) const {
+        // Schlick's approximation
+        auto r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        r0 = r0 * r0;
+        return r0 + (1.0 - r0) * std::pow((1.0 - cosine), 5.0);
+    }
+
 public:
     dielectric() = default;
 
@@ -21,7 +28,7 @@ public:
         const double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
         vec3 direction;
-        if (refraction_ratio * sin_theta > 1.0)
+        if (refraction_ratio * sin_theta > 1.0 || reflectance(cos_theta) > random_double())
             direction = vec3::reflect(unit_direction, rec.normal);
         else
             direction = vec3::refract(unit_direction, rec.normal, refraction_ratio);
