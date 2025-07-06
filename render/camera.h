@@ -8,12 +8,17 @@ class camera {
 private:
     double aspect_ratio{1.0};
     double pixel_samples_scale{0.01};
+    double vertical_fov{90.0};
     int image_width{100};
     int image_height{100};
     int samples_per_pixel{100};
     int max_depth{10};
     point3 center;
     point3 pixel00_loc;
+    point3 look_from = point3{0,0,0};
+    point3 look_at = point3{0,0,-1};
+    vec3 view_up = vec3{0,1,0};
+    vec3 u, v, w;
     vec3 pixel_delta_u;
     vec3 pixel_delta_v;
 
@@ -23,19 +28,25 @@ private:
 
         pixel_samples_scale = 1.0 / samples_per_pixel;
 
-        center = point3{0.0, 0.0, 0.0};
+        center = look_from;
 
-        constexpr auto focal_length = 1.0;
-        constexpr auto viewport_height = 2.0;
+        const auto focal_length = (look_from - look_at).length();
+        const auto theta = degrees_to_radians(vertical_fov);
+        const auto h = std::tan(theta / 2.0) * focal_length;
+        const auto viewport_height = 2.0 * h;
         const auto viewport_width = viewport_height * (static_cast<double>(image_width) / image_height);
 
-        const auto viewport_u = vec3{viewport_width, 0.0, 0.0};
-        constexpr auto viewport_v = vec3{0.0, -viewport_height, 0.0};
+        w = unit_vector(look_from - look_at);
+        u = unit_vector(cross(view_up, w));
+        v = cross(w, u);
+
+        const auto viewport_u = viewport_width * u;
+        const auto viewport_v = viewport_height * -v;
 
         pixel_delta_u = viewport_u / image_width;
         pixel_delta_v = viewport_v / image_height;
 
-        const auto viewport_upper_left = center - vec3{0, 0, focal_length} - viewport_u / 2 - viewport_v / 2;
+        const auto viewport_upper_left = center - focal_length * w - viewport_u / 2 - viewport_v / 2;
         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
 
@@ -106,5 +117,22 @@ public:
     void set_max_depth(const int max_depth) {
         if (max_depth <= 0.0) throw std::invalid_argument("Max depth must be positive");
         this->max_depth = max_depth;
+    }
+
+    void set_vertical_fov(const double vertical_fov) {
+        if (vertical_fov <= 0.0) throw std::invalid_argument("Vertical field of view must be positive");
+        this->vertical_fov = vertical_fov;
+    }
+
+    void set_look_from(const point3& look_from) {
+        this->look_from = look_from;
+    }
+
+    void set_look_at(const point3& look_at) {
+        this->look_at = look_at;
+    }
+
+    void set_view_up(const vec3& view_up) {
+        this->view_up = view_up;
     }
 };
