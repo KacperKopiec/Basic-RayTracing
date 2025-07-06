@@ -57,6 +57,13 @@ public:
         return v - 2 * dot(v, n) * n;
     }
 
+    static vec3 refract(const vec3& uv, const vec3& n, const double etai_over_etat) {
+        const double cos_theta = std::fmin(dot(-uv, n), 1.0);
+        const vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
+        const vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.squared_length())) * n;
+        return r_out_perp + r_out_parallel;
+    }
+
     static vec3 random() {
         return vec3{random_double(), random_double(), random_double()};
     }

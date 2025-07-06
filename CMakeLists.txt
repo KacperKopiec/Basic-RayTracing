@@ -16,4 +16,5 @@ add_executable(raytracing main.cpp
         render/camera.h
         objects/materials/material.h
         objects/materials/lambertian.h
-        objects/materials/metal.h)
+        objects/materials/metal.h
+        objects/materials/dielectric.h)

@@ -6,7 +6,7 @@
 class metal final : public material {
 private:
     color albedo;
-    double fuzz;
+    double fuzz{};
 
 public:
     metal() = default;
